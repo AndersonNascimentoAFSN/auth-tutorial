@@ -1,7 +1,10 @@
 "use server"
 
+import bcrypt from 'bcryptjs'
+
 import { RegisterSchema } from '@/schemas'
 import { RegisterFormSchemaType } from '@/types/formTypes'
+import { createUser, getUserByEmail } from '@/data/user'
 
 export const register = async (values: RegisterFormSchemaType) => {
   const validatedFields = RegisterSchema.safeParse(values)
@@ -11,6 +14,23 @@ export const register = async (values: RegisterFormSchemaType) => {
     return { error: "Invalid fields!" }
   }
 
-  return { success: "Email sent!" }
+  const { email, name, password } = validatedFields.data
+  const hashedPassword = await bcrypt.hash(password, 10)
+
+  const existingUser = await getUserByEmail(email)
+
+  if (existingUser) {
+    return { error: "Email already in use!" }
+  }
+
+  const user = await createUser({ email, name, password: hashedPassword })
+
+  if (!user) {
+    return { error: "Error creating user!" }
+  }
+
+  // Todo: Send verification token email
+
+  return { success: "User created!" }
   // revalidatePath('/auth/login')
 }
