@@ -11,6 +11,23 @@ export const {
   signIn,
   signOut
 } = NextAuth({
+  pages: {
+    signIn: '/auth/login',
+    error: '/auth/error',
+    // signOut: '/auth/login',
+    // verifyRequest: '/auth/verify-request',
+    // newUser: '/auth/new-user'
+  },
+  events: {
+    async linkAccount({ user, account, profile }) {
+      console.log('account', account)
+      console.log('profile', profile)
+      await db.user.update({
+        where: { id: user.id },
+        data: { emailVerified: new Date() }
+      })
+    }
+  },
   callbacks: {
     // async redirect({ url, baseUrl }) {
     //   console.log('url', url)
@@ -47,7 +64,7 @@ export const {
 
       const existingUser = await getUserById(token.sub)
       if (!existingUser) return token
-      
+
       Reflect.set(token, 'role', existingUser.role)
 
       return token
