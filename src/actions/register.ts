@@ -5,6 +5,8 @@ import bcrypt from 'bcryptjs'
 import { RegisterSchema } from '@/schemas'
 import { RegisterFormSchemaType } from '@/types/formTypes'
 import { createUser, getUserByEmail } from '@/data/user'
+import { generateVerificationToken } from '@/lib/tokens'
+import { sendVerificationEmail } from '@/lib/mail'
 
 export const register = async (values: RegisterFormSchemaType) => {
   const validatedFields = RegisterSchema.safeParse(values)
@@ -29,8 +31,10 @@ export const register = async (values: RegisterFormSchemaType) => {
     return { error: "Error creating user!" }
   }
 
-  // Todo: Send verification token email
+  const verificationToken = await generateVerificationToken(email)
 
-  return { success: "User created!" }
-  // revalidatePath('/auth/login')
+  // Todo: Send verification token email
+  await sendVerificationEmail(verificationToken.email, verificationToken.token)
+
+  return { success: "Confirmation email sent!" }
 }

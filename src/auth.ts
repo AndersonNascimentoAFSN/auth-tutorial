@@ -14,14 +14,12 @@ export const {
   pages: {
     signIn: '/auth/login',
     error: '/auth/error',
+    newUser: '/auth/register'
     // signOut: '/auth/login',
     // verifyRequest: '/auth/verify-request',
-    // newUser: '/auth/new-user'
   },
   events: {
-    async linkAccount({ user, account, profile }) {
-      console.log('account', account)
-      console.log('profile', profile)
+    async linkAccount({ user }) {
       await db.user.update({
         where: { id: user.id },
         data: { emailVerified: new Date() }
@@ -38,17 +36,23 @@ export const {
     //   else if (new URL(url).origin === baseUrl) return url
     //   return baseUrl
     // },
-    // async signIn({ user }) {
-    //   if (user.id) {
-    //     const existingUser = await getUserById(user.id)
+    async signIn({ user, account }) {
+      // Allow OAuth without email verification
+      if (account?.provider !== "credentials") return true
 
-    //     if(!existingUser || !existingUser.emailVerified) {
-    //       return false
-    //     }
-    //   }
+      if (user.id) {
+        const existingUser = await getUserById(user.id)
 
-    //   return true
-    // },
+        // Prevent sign in without email verification
+        if (!existingUser || !existingUser.emailVerified) {
+          return false
+        }
+      }
+
+      // Todo: Add 2FA check
+
+      return true
+    },
     async session({ token, session }) {
       if (token.sub && session.user) {
         Reflect.set(session.user, 'id', token.sub)
