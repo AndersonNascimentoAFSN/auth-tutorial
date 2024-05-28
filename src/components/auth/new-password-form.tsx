@@ -1,12 +1,11 @@
 'use client'
 
 import { useTransition, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
-import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useSearchParams } from 'next/navigation'
 
-import { LoginSchema } from '@/schemas'
+import { NewPasswordSchema } from '@/schemas'
 import { CardWrapper } from "@/components/auth/card-wrapper"
 import {
   Form,
@@ -20,33 +19,31 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { FormError } from '@/components/form-error'
 import { FormSuccess } from '@/components/form-success'
-import { login } from '@/actions/login'
-import { LoginFormSchemaType } from '@/types/formTypes'
+import { NewPasswordFormSchemaType } from '@/types/formTypes'
+import { newPassword } from '@/actions/new-password'
 
 
-export function LoginForm() {
-  const searchParams = useSearchParams()
-  const urlError = searchParams.get('error') === 'OAuthAccountNotLinked'
-    ? "Email already in use with different provider!" : ''
-
+export function NewPasswordForm() {
   const [error, setError] = useState<string | undefined>('')
   const [success, setSuccess] = useState<string | undefined>('')
-  const [isPending, startTransition] = useTransition()
 
-  const form = useForm<LoginFormSchemaType>({
-    resolver: zodResolver(LoginSchema),
+  const [isPending, startTransition] = useTransition()
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
+
+  const form = useForm<NewPasswordFormSchemaType>({
+    resolver: zodResolver(NewPasswordSchema),
     defaultValues: {
-      email: '',
       password: '',
     }
   })
 
-  const onSubmit = (values: LoginFormSchemaType) => {
+  const onSubmit = (values: NewPasswordFormSchemaType) => {
     setError('')
     setSuccess('')
 
     startTransition(() => {
-      login(values)
+      newPassword(values, token)
         .then((data) => {
           if (data?.error) {
             setError(data.error)
@@ -61,10 +58,9 @@ export function LoginForm() {
 
   return (
     <CardWrapper
-      headerLabel="Welcome back"
-      backButtonLabel="Don't have an account?"
-      backButtonHref="/auth/register"
-      showSocial
+      headerLabel="Enter a new password"
+      backButtonLabel="Back to login"
+      backButtonHref="/auth/login"
     >
       <Form {...form}>
         <form
@@ -72,24 +68,6 @@ export function LoginForm() {
           className="space-y-6"
         >
           <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isPending}
-                      placeholder='john.doe@example.com'
-                    />
-                  </FormControl>
-                  <FormMessage {...field} />
-                </FormItem>
-              )}
-            />
-
             <FormField
               control={form.control}
               name="password"
@@ -104,23 +82,13 @@ export function LoginForm() {
                       type="password"
                     />
                   </FormControl>
-                  <Button
-                    size="sm"
-                    variant="link"
-                    asChild
-                    className='px-0 font-normal'
-                  >
-                    <Link href="/auth/forgot-password">
-                      Forgot password?
-                    </Link>
-                  </Button>
                   <FormMessage {...field} />
                 </FormItem>
               )}
             />
           </div>
 
-          <FormError message={error || urlError} />
+          <FormError message={error} />
           <FormSuccess message={success} />
 
           <Button
@@ -129,7 +97,7 @@ export function LoginForm() {
             className="w-full"
             disabled={isPending}
           >
-            Login
+            Reset password
           </Button>
         </form>
       </Form>
