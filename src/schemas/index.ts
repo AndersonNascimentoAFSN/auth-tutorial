@@ -9,7 +9,8 @@ export const LoginSchema = z.object({
     .email({ message: 'Invalid email address' }),
   password: z
     .string()
-    .min(1, { message: 'Password is required' })
+    .min(1, { message: 'Password is required' }),
+  code: z.optional(z.string()),
 })
 
 export const RegisterSchema = z.object({
@@ -39,7 +40,7 @@ export const ResetSchema = z.object({
 
 export const NewPasswordSchema = z.object({
   password: z
-  .string()
-  .min(1, { message: 'Password is required' })
-  .min(6, { message: 'Password must be at least 6 characters long' }),
+    .string()
+    .min(1, { message: 'Password is required' })
+    .min(6, { message: 'Password must be at least 6 characters long' }),
 })

@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import { db } from '@/lib/db'
 import authConfig from '@/auth.config'
 import { getUserById } from "@/data/user"
+import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation"
 
 export const {
   auth,
@@ -28,8 +29,6 @@ export const {
   },
   callbacks: {
     // async redirect({ url, baseUrl }) {
-    //   console.log('url', url)
-    //   console.log('baseUrl', baseUrl)
     //   // Allows relative callback URLs
     //   if (url.startsWith("/")) return `${baseUrl}${url}`
     //   // Allows callback URLs on the same origin
@@ -37,7 +36,6 @@ export const {
     //   return baseUrl
     // },
     async signIn({ user, account }) {
-      console.log(user, account)
       // Allow OAuth without email verification
       if (account?.provider !== "credentials") return true
 
@@ -48,9 +46,18 @@ export const {
         if (!existingUser || !existingUser.emailVerified) {
           return false
         }
-      }
 
-      // Todo: Add 2FA check
+        if (existingUser.isTwoFactorEnabled) {
+          const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(existingUser.id)
+
+          if (!twoFactorConfirmation) return false
+
+          // Delete two factor confirmation for next sign in
+          await db.twoFactorConfirmation.delete({
+            where: { id: twoFactorConfirmation.id }
+          })
+        }
+      }
 
       return true
     },

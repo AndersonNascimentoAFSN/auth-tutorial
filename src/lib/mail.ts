@@ -30,3 +30,15 @@ export async function sendPasswordResetEmail(email: string, token: string) {
     `
   })
 }
+
+export async function sendTwoFactorTokenEmail(email: string, token: string) {
+  await resend.emails.send({
+    from: "onboarding@resend.dev",
+    to: email,
+    subject: "2FA Code",
+    text: `Please copy your 2FA code:`,
+    html: `
+      <p>Your 2FA code: <code>${token}</code></p>
+    `
+  })
+}
