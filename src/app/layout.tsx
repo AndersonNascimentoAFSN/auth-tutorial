@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Poppins } from "next/font/google";
+import { Toaster } from "sonner";
 
 import { NextAuthProvider } from "@/app/nextAuthProvider";
 
@@ -23,6 +24,7 @@ export default function RootLayout({
     <NextAuthProvider>
       <html lang="en">
         <body className={`${inter.variable} ${poppins.variable}`}>
+          <Toaster />
           {children}
         </body>
       </html>
