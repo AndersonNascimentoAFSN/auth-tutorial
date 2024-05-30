@@ -6,6 +6,7 @@ import { Role } from '@/types/role'
 
 export type ExtendedUser = DefaultSession["user"] & {
   role: Role
+  isTwoFactorEnabled: boolean
 }
 
 declare module "next-auth" {
@@ -17,5 +18,6 @@ declare module "next-auth" {
 declare module "@auth/core/jwt" {
   interface JWT {
     role: Role
+    isTwoFactorEnabled: boolean
   }
 }

@@ -37,7 +37,7 @@ export function Navbar() {
           variant={pathname === "/server" ? "default" : "outline"}
         >
           <Link href="/server">
-            server
+            Server
           </Link>
         </Button>
 

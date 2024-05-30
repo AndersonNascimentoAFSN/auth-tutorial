@@ -68,6 +68,9 @@ export const {
       if (token.role && session.user) {
         Reflect.set(session.user, 'role', token.role)
       }
+      if (token.isTwoFactorEnabled && session.user) {
+        Reflect.set(session.user, 'isTwoFactorEnabled', token.isTwoFactorEnabled)
+      }
 
       return session
     },
@@ -78,6 +81,7 @@ export const {
       if (!existingUser) return token
 
       Reflect.set(token, 'role', existingUser.role)
+      Reflect.set(token, 'isTwoFactorEnabled', existingUser.isTwoFactorEnabled)
 
       return token
     }
