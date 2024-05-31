@@ -5,12 +5,14 @@ import { db } from '@/lib/db'
 import authConfig from '@/auth.config'
 import { getUserById } from "@/data/user"
 import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation"
+import { getAccountByUserId } from "@/data/account"
 
 export const {
   auth,
   handlers,
   signIn,
-  signOut
+  signOut,
+  unstable_update,
 } = NextAuth({
   pages: {
     signIn: '/auth/login',
@@ -66,11 +68,19 @@ export const {
         Reflect.set(session.user, 'id', token.sub)
       }
       if (token.role && session.user) {
+        Reflect.set(session.user, 'name', token.name)
+      }
+      if (token.role && session.user) {
+        Reflect.set(session.user, 'email', token.email)
+      }
+      if (token.role && session.user) {
         Reflect.set(session.user, 'role', token.role)
       }
       if (token.isTwoFactorEnabled && session.user) {
         Reflect.set(session.user, 'isTwoFactorEnabled', token.isTwoFactorEnabled)
       }
+
+      Reflect.set(session.user, 'isOAuth', token.isOAuth)
 
       return session
     },
@@ -79,6 +89,13 @@ export const {
 
       const existingUser = await getUserById(token.sub)
       if (!existingUser) return token
+
+      const existingAccount = await getAccountByUserId(existingUser.id)
+
+      Reflect.set(token, 'isOAuth', !!existingAccount)
+
+      Reflect.set(token, 'name', existingUser.name)
+      Reflect.set(token, 'email', existingUser.email)
 
       Reflect.set(token, 'role', existingUser.role)
       Reflect.set(token, 'isTwoFactorEnabled', existingUser.isTwoFactorEnabled)
