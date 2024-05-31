@@ -13,7 +13,10 @@ import { getTwoFactorTokenByEmail } from '@/data/two-factor-token'
 import { db } from '@/lib/db'
 import { getTwoFactorConfirmationByUserId } from '@/data/two-factor-confirmation'
 
-export const login = async (values: LoginFormSchemaType) => {
+export const login = async (
+  values: LoginFormSchemaType,
+  callbackUrl?: string | null,
+) => {
   const validatedFields = LoginSchema.safeParse(values)
 
   if (!validatedFields.success) {
@@ -72,6 +75,7 @@ export const login = async (values: LoginFormSchemaType) => {
       await db.twoFactorConfirmation.create({
         data: {
           userId: existingUser.id,
+          expires: new Date(Date.now() + 1000 * 60 * 10),
         },
       })
 
@@ -86,7 +90,7 @@ export const login = async (values: LoginFormSchemaType) => {
     await signIn("credentials", {
       email: email,
       password: password,
-      redirectTo: DEFAULT_LOGIN_REDIRECT,
+      redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT,
     })
 
     return { success: 'success authentication!' }
